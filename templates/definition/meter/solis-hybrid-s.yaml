@@ -14,14 +14,8 @@ requirements:
   description:
     de: |
       Die aktive Batteriesteuerung überschreibt die Wechselrichter Einstellungen "Allow grid charging" und "Battery Reserve SOC".
-      Der Parameter "Netzladen im Hold-Modus erlauben" (gridchargeonhold, Standard: false) bestimmt, ob "Allow grid charging" aktiviert bleibt wenn der Max. SOC Wert erreicht ist.
-      Dies ist für Umgebungen mit mehreren Wechselrichtern parallel zum Solis Inverter gedacht, in denen der Solis Inverter den
-      Überschuss der anderen Inverter in seine Batterie laden soll. Eine Ladung aus dem öffentlichen Netz über den Max. SOC hinaus erfolgt dabei nicht.
     en: |
       Active battery control overrides the inverter settings "Allow grid charging" and "Battery Reserve SOC".
-      The "Keep grid charging on in hold mode" (gridchargeonhold, default: false) determines whether "Allow grid charging" remains enabled when the Max. SOC value is reached.
-      This is intended for environments with multiple inverters parallel to the Solis inverter, where the Solis inverter should
-      charge its battery from the surplus of the other inverters. Charging from the public grid beyond Max. SOC will not occur.
 params:
   - name: usage
     choice: ["grid", "pv", "battery"]
@@ -31,12 +25,6 @@ params:
     id: 1
   - name: maxacpower
   - preset: battery-params
-  - name: gridchargeonhold
-    default: false
-    type: bool
-    description:
-      en: Keep grid charging on in hold mode
-      de: Netzladen im Hold-Modus erlauben
 render: |
   type: custom
   {{- if eq .usage "grid" }}
@@ -192,11 +180,7 @@ render: |
               type: writeholding
               decode: uint16
         - source: const
-          {{- if .gridchargeonhold }}
-          value: 49 # Bits 0+4+5: Self Use Mode (1) + Battery Reserve (16) + Allow Grid Charge (32)
-          {{- else }}
           value: 17 # Bits 0+4: Self Use (1) + Battery Reserve (16)
-          {{- end }}
           set:
             source: modbus
             {{- include "modbus" . | indent 10 }}
